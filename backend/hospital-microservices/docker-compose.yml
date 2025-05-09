@@ -1,0 +1,183 @@
+version: "3.8"
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      ADMIN_SERVICE_URL: "http://admin-service:3001"
+      HOSPITAL_SERVICE_URL: "http://hospital-service:3002"
+      NODE_ENV: production
+    volumes:
+      - ./config:/usr/src/app/config
+      - /usr/src/app/node_modules
+    networks:
+      - hospital_network
+    depends_on:
+      - admin-service
+      - hospital-service
+    restart: unless-stopped
+
+  # Admin Service
+  admin-service:
+    build:
+      context: .
+      dockerfile: ./admin-service/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      DB_HOST: "quito-db"
+      DB_PORT: 3306
+      DB_USER: admin
+      DB_PASSWORD: adminpass
+      DB_NAME: hospital_db
+      JWT_SECRET: "tu_super_secreto_jwt"
+    volumes:
+      - ./config:/usr/src/app/config
+      - /usr/src/app/node_modules
+    networks:
+      - hospital_network
+    restart: unless-stopped
+    depends_on:
+      - quito-db
+
+  # Hospital Service (única instancia, selecciona la ciudad en cada petición)
+  hospital-service:
+    build:
+      context: ./hospital-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      DEFAULT_CITY: quito
+      DB_HOST: quito-db
+      DB_PORT: 3306
+      DB_USER: admin
+      DB_PASSWORD: adminpass
+      DB_NAME: hospital_db
+      GUAYAQUIL_DB_HOST: guayaquil-db
+      GUAYAQUIL_DB_PORT: 3306
+      CUENCA_DB_HOST: cuenca-db
+      CUENCA_DB_PORT: 3306
+      LATACUNGA_DB_HOST: latacunga-db
+      LATACUNGA_DB_PORT: 3306
+      JWT_SECRET: secret_key_hospital
+      JWT_EXPIRES_IN: 8h
+    volumes:
+      - ./config:/usr/src/app/config
+      - /usr/src/app/node_modules
+    networks:
+      - hospital_network
+    restart: unless-stopped
+    depends_on:
+      - quito-db
+      - guayaquil-db
+      - cuenca-db
+      - latacunga-db
+
+  # Base de datos principal (Quito)
+  quito-db:
+    image: mariadb:10.6
+    container_name: quito-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hospital_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+      MARIADB_SERVER_ID: 1
+      MARIADB_REPLICATION_MODE: master
+      MARIADB_REPLICATION_USER: replicator
+      MARIADB_REPLICATION_PASSWORD: replica_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - quito_db_data:/var/lib/mysql
+      - ./custom-my.cnf:/etc/mysql/conf.d/custom-my.cnf
+    networks:
+      - hospital_network
+
+  # Base de datos esclava (Guayaquil)
+  guayaquil-db:
+    image: mariadb:10.6
+    container_name: guayaquil-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hospital_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+      MARIADB_SERVER_ID: 2
+      MARIADB_REPLICATION_MODE: slave
+      MARIADB_REPLICATION_USER: replicator
+      MARIADB_REPLICATION_PASSWORD: replica_pass
+      MARIADB_MASTER_HOST: quito-db
+      MARIADB_MASTER_PORT: 3306
+    ports:
+      - "3308:3306"
+    volumes:
+      - guayaquil_db_data:/var/lib/mysql
+    networks:
+      - hospital_network
+    depends_on:
+      - quito-db
+
+  # Base de datos esclava (Cuenca)
+  cuenca-db:
+    image: mariadb:10.6
+    container_name: cuenca-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hospital_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+      MARIADB_SERVER_ID: 3
+      MARIADB_REPLICATION_MODE: slave
+      MARIADB_REPLICATION_USER: replicator
+      MARIADB_REPLICATION_PASSWORD: replica_pass
+      MARIADB_MASTER_HOST: quito-db
+      MARIADB_MASTER_PORT: 3306
+    ports:
+      - "3309:3306"
+    volumes:
+      - cuenca_db_data:/var/lib/mysql
+    networks:
+      - hospital_network
+    depends_on:
+      - quito-db
+
+  # Base de datos esclava (Latacunga)
+  latacunga-db:
+    image: mariadb:10.6
+    container_name: latacunga-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hospital_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+      MARIADB_SERVER_ID: 4
+      MARIADB_REPLICATION_MODE: slave
+      MARIADB_REPLICATION_USER: replicator
+      MARIADB_REPLICATION_PASSWORD: replica_pass
+      MARIADB_MASTER_HOST: quito-db
+      MARIADB_MASTER_PORT: 3306
+    ports:
+      - "3310:3306"
+    volumes:
+      - latacunga_db_data:/var/lib/mysql
+    networks:
+      - hospital_network
+    depends_on:
+      - quito-db
+
+volumes:
+  quito_db_data:
+  guayaquil_db_data:
+  cuenca_db_data:
+  latacunga_db_data:
+
+networks:
+  hospital_network:
+    driver: bridge
