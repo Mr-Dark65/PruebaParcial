@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fuentes personalizadas */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Estilos base */
+body {
+  font-family: 'Poppins', sans-serif;
+  @apply bg-gray-50 text-gray-800;
+}
+
+/* Estilos para tablas */
+.table-container {
+  @apply overflow-x-auto shadow-md rounded-lg;
+}
+
+table {
+  @apply min-w-full;
+}
+
+th {
+  @apply bg-gray-100 text-left py-3 px-4 font-semibold text-gray-700 uppercase tracking-wider;
+}
+
+td {
+  @apply py-3 px-4 border-b border-gray-200;
+}
+
+tr:hover {
+  @apply bg-gray-50;
+}
+
+/* Estilos para formularios */
+.input-field {
+  @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.select-field {
+  @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+/* Estilos para botones */
+.btn-primary {
+  @apply bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors;
+}
+
+/* Estilos para tarjetas */
+.card {
+  @apply bg-white rounded-lg shadow-md p-6;
+}
+
+/* Estilos para el sidebar */
+.sidebar-item {
+  @apply block py-2 px-4 hover:bg-gray-700 rounded transition-colors;
+}
+
+.sidebar-item.active {
+  @apply bg-gray-700;
+}
+
+/* Estilos para el navbar */
+.navbar {
+  @apply bg-white shadow-md p-4 flex justify-between items-center;
+}
+
+/* Estilos para modales */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* más alto para asegurar visibilidad */
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Estilos para el dashboard */
+.stat-card {
+  @apply bg-white p-6 rounded-lg shadow-md transition-transform hover:scale-105;
+}
+
+.stat-card h3 {
+  @apply text-lg font-semibold mb-2 text-gray-600;
+}
+
+.stat-card p {
+  @apply text-3xl font-bold;
+}
+
+/* Estilos para la vista de login */
+.login-container {
+  @apply min-h-screen flex items-center justify-center bg-gray-100;
+}
+
+.login-box {
+  @apply bg-white p-8 rounded shadow-md w-96;
+}
+
+.login-title {
+  @apply text-2xl font-bold mb-6 text-center text-gray-800;
+}
